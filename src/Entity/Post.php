@@ -5,10 +5,20 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=PostRepository::class)
- * @ApiResource()
+ * @ApiResource(
+ *   normalizationContext={"groups"={"read:Post:collection"}},
+ *   itemOperations={
+ *       "get"={
+ *          "normalization_context"={
+ *            "groups"={"read:Post:item", "read:Category:item" }
+ *           }
+ *       }
+ *   }
+ * )
  */
 class Post
 {
@@ -16,21 +26,25 @@ class Post
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"read:Post:collection", "read:Post:item"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read:Post:collection", "read:Post:item"})
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"read:Post:collection"})
      */
     private $slug;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"read:Post:item"})
      */
     private $content;
 
@@ -47,6 +61,7 @@ class Post
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"read:Post:item"})
      */
     private $category;
 
