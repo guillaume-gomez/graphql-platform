@@ -6,10 +6,14 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 use Cocur\Slugify\Slugify;
 
 /**
  * @ORM\Entity(repositoryClass=PostRepository::class)
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("title")
  * @ApiResource(
  *   normalizationContext={"groups"={"read:Post:collection"}},
  *   collectionOperations={
@@ -47,18 +51,22 @@ class Post
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
+     * @Assert\Length(min=5)
      * @Groups({"read:Post:collection", "read:Post:item", "put:Post", "post:Post" })
      */
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
      * @Groups({"read:Post:collection"})
      */
     private $slug;
 
     /**
      * @ORM\Column(type="text")
+     * @Assert\Length(min=5)
      * @Groups({"read:Post:item", "put:Post", "post:Post" })
      */
     private $content;
@@ -84,9 +92,18 @@ class Post
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->slug = "fill this value to be overrived later on";
+    }
 
-/*        $slugify = new Slugify();
-        $this->slug = $slugify->slugify($this->title);*/
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     * @Groups({ "put:Post", "post:Post" })
+     */
+    public function setSlugValue(): void
+    {
+        $slugify = new Slugify();
+        $this->slug = $slugify->slugify($this->title);
     }
 
     public function getId(): ?int
