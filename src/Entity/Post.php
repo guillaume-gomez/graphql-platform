@@ -6,15 +6,30 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Cocur\Slugify\Slugify;
 
 /**
  * @ORM\Entity(repositoryClass=PostRepository::class)
  * @ApiResource(
  *   normalizationContext={"groups"={"read:Post:collection"}},
+ *   collectionOperations={
+ *       "get",
+ *       "post"={
+ *         "denormalization_context"={
+ *           "groups"={"post:Post"}
+ *         }
+ *       },
+ *   },
  *   itemOperations={
+ *       "put"={
+ *         "denormalization_context"={
+ *           "groups"={"put:Post"}
+ *         }
+ *       },
+ *       "delete",
  *       "get"={
  *          "normalization_context"={
- *            "groups"={"read:Post:item", "read:Category:item" }
+ *             "groups"={"read:Post:item", "read:Category:item" }
  *           }
  *       }
  *   }
@@ -32,7 +47,7 @@ class Post
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"read:Post:collection", "read:Post:item"})
+     * @Groups({"read:Post:collection", "read:Post:item", "put:Post", "post:Post" })
      */
     private $title;
 
@@ -44,7 +59,7 @@ class Post
 
     /**
      * @ORM\Column(type="text")
-     * @Groups({"read:Post:item"})
+     * @Groups({"read:Post:item", "put:Post", "post:Post" })
      */
     private $content;
 
@@ -61,9 +76,18 @@ class Post
     /**
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups({"read:Post:item"})
+     * @Groups({ "read:Post:item", "put:Post", "post:Post" })
      */
     private $category;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+
+/*        $slugify = new Slugify();
+        $this->slug = $slugify->slugify($this->title);*/
+    }
 
     public function getId(): ?int
     {
