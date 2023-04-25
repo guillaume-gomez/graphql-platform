@@ -20,7 +20,7 @@ use Cocur\Slugify\Slugify;
  *       "get",
  *       "post"={
  *         "denormalization_context"={
- *           "groups"={"post:Post"}
+ *           "groups"={"post:Post", "post:Category"}
  *         }
  *       },
  *   },
@@ -82,8 +82,9 @@ class Post
     private $updatedAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="posts")
+     * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="posts", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
+     * @Assert\Valid
      * @Groups({ "read:Post:item", "put:Post", "post:Post" })
      */
     private $category;

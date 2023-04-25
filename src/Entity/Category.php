@@ -51,6 +51,8 @@ class Category
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
+     * @Assert\Length(min=3)
      * @Groups({"read:Category:collection", "read:Category:item", "post:Category", "put:Category" })
      */
     private $name;
