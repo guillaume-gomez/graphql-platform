@@ -13,62 +13,61 @@ use Cocur\Slugify\Slugify;
 /**
  * @ORM\Entity(repositoryClass=PostRepository::class)
  * @ORM\HasLifecycleCallbacks()
- * @UniqueEntity("title")
- * @ApiResource(
- *   normalizationContext={"groups"={"read:Post:collection"}},
- *   collectionOperations={
- *       "get",
- *       "post"={
- *         "denormalization_context"={
- *           "groups"={"post:Post", "post:Category"}
- *         }
- *       },
- *   },
- *   itemOperations={
- *       "put"={
- *         "denormalization_context"={
- *           "groups"={"put:Post"}
- *         }
- *       },
- *       "delete",
- *       "get"={
- *          "normalization_context"={
- *             "groups"={"read:Post:item", "read:Category:item" }
- *           }
- *       }
- *   }
- * )
  */
+#[ApiResource(
+    normalizationContext: ["groups" => ["read:Post:collection"]],
+    collectionOperations: [
+        "get",
+        "post" => [
+            "denormalization_context" => [
+                "groups" => ["post:Post", "post:Category"]
+            ]
+        ]
+    ],
+    itemOperations: [
+        "put" => [
+            "denormalization_context" => [
+                "groups" => ["put:Post"]
+            ]
+        ],
+        "delete",
+        "get" => [
+            "normalization_context" => [
+                "groups" => ["read:Post:item", "read:Category:item"]
+            ]
+        ]
+    ]
+)]
 class Post
 {
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"read:Post:collection", "read:Post:item"})
      */
+    #[Groups(["read:Post:collection", "read:Post:item"])]
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
      * @Assert\Length(min=5)
-     * @Groups({"read:Post:collection", "read:Post:item", "put:Post", "post:Post" })
      */
+    #[Groups(["read:Post:collection", "read:Post:item", "put:Post", "post:Post"])]
     private $title;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
-     * @Groups({"read:Post:collection"})
      */
+    #[Groups(["read:Post:collection"])]
     private $slug;
 
     /**
      * @ORM\Column(type="text")
      * @Assert\Length(min=5)
-     * @Groups({"read:Post:item", "put:Post", "post:Post" })
      */
+    #[Groups(["read:Post:item", "put:Post", "post:Post"])]
     private $content;
 
     /**
@@ -85,8 +84,8 @@ class Post
      * @ORM\ManyToOne(targetEntity=Category::class, inversedBy="posts", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      * @Assert\Valid
-     * @Groups({ "read:Post:item", "put:Post", "post:Post" })
      */
+    #[Groups(["read:Post:item", "put:Post", "post:Post"])]
     private $category;
 
     public function __construct()
@@ -99,8 +98,8 @@ class Post
     /**
      * @ORM\PrePersist
      * @ORM\PreUpdate
-     * @Groups({ "put:Post", "post:Post" })
      */
+    #[Groups(["put:Post", "post:Post"])]
     public function setSlugValue(): void
     {
         $slugify = new Slugify();
