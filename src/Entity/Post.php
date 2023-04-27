@@ -3,11 +3,13 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use App\Repository\PostRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Cocur\Slugify\Slugify;
 
 /**
@@ -36,8 +38,18 @@ use Cocur\Slugify\Slugify;
                 "groups" => ["read:Post:item", "read:Category:item"]
             ]
         ]
+    ],
+    graphql: [
+        'create' => [
+            "denormalization_context" => [
+                "groups" => ["post:Post", "post:Category"]
+            ]
+        ],
+        'item_query'
     ]
-)]
+),
+ApiFilter(SearchFilter::class, properties: ["title" => "partial"])
+]
 class Post
 {
     /**
@@ -87,6 +99,11 @@ class Post
      */
     #[Groups(["read:Post:item", "put:Post", "post:Post"])]
     private $category;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $online;
 
     public function __construct()
     {
@@ -179,6 +196,18 @@ class Post
     public function setCategory(?Category $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function isOnline(): ?bool
+    {
+        return $this->online;
+    }
+
+    public function setOnline(bool $online): self
+    {
+        $this->online = $online;
 
         return $this;
     }
